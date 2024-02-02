@@ -53,14 +53,20 @@ public class QuestionRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task Delete(Question question)
+    {
+        _context.Questions.Remove(question);
+        await _context.SaveChangesAsync();
+        await _optionRepository.DeleteByQuestion(question.Id);
+    }
+
     public async Task DeleteByQuiz(int quizId)
     {
         List<Question> questions = await _context.Questions.Where(a => a.QuizId == quizId).ToListAsync();
 
         foreach (var question in questions)
         {
-            await _optionRepository.DeleteByQuestion(question.Id);
-            _context.Questions.Remove(question);
+            await Delete(question);
         }
 
         await _context.SaveChangesAsync();

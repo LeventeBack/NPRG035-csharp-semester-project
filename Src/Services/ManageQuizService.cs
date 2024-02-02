@@ -6,11 +6,13 @@ namespace QuizEdu.Src.Services;
 
 public class ManageQuizService
 {
-    private QuizRepository? _repository;
+    private QuizRepository _repository;
     private NavigatorService _navigator;
     private JsInteractionService _jsInteraction;
 
     public List<Quiz>? Quizzes;
+
+    public Quiz? SelectedQuiz;
 
     public ManageQuizService(
         QuizRepository repository,
@@ -28,6 +30,18 @@ public class ManageQuizService
         Quizzes = await _repository.Get();
     }
 
+    public async Task LoadQuiz(int quizId)
+    {
+        if (quizId != 0)
+        {
+            SelectedQuiz = await _repository.Get(quizId);
+        }
+        else
+        {
+            _navigator.GoToManageQuizzes();
+        }
+    }
+
     public void InitStartQuiz(Quiz quiz)
     {
         if (quiz != null)
@@ -38,10 +52,11 @@ public class ManageQuizService
 
     public async Task InitCreateQuiz()
     {
-        Quiz quiz = new Quiz() { Title = "New Quiz" };
+        Quiz quiz = new Quiz();
         int quizId = await _repository.Create(quiz);
         _navigator.GoToManageQuestions(quizId);
     }
+
     public void InitEditQuiz(Quiz quiz)
     {
         if (quiz != null)
@@ -50,19 +65,43 @@ public class ManageQuizService
         }
     }
 
+    public async Task InitSaveQuiz()
+    {
+        await _repository.Update(SelectedQuiz);
+        _navigator.GoToManageQuizzes();
+    }
+
     public async Task InitDeleteQuiz(Quiz quiz)
     {
         var confirm = await _jsInteraction.ConfirmDelete(quiz.Title);
         if (confirm)
         {
             await _repository.Delete(quiz.Id);
-            Quizzes.Remove(quiz);
+            Quizzes?.Remove(quiz);
         }
     }
 
     public async Task LoadNonEmptyQuizzes()
     {
         await LoadQuizzes();
-        Quizzes = Quizzes.Where(q => q.Questions.Count > 0).ToList();
+        Quizzes = Quizzes?.Where(q => q.Questions.Count > 0).ToList();
+    }
+
+    public void UpdateSelectedQuiz(Question question)
+    {
+        if (SelectedQuiz == null || SelectedQuiz.Questions == null)
+        {
+            return;
+        }
+
+        int index = SelectedQuiz.Questions.FindIndex(q => q.Id == question.Id);
+        if (index != -1)
+        {
+            SelectedQuiz.Questions[index] = question;
+        }
+        else
+        {
+            SelectedQuiz.Questions.Add(question);
+        }
     }
 }

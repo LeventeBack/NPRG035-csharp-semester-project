@@ -11,7 +11,7 @@
 
 <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" class="py-10 px-6">
     <MudButton Color="Color.Info" Variant="Variant.Filled" Style="min-width: 320px; font-size: 1.6rem;"
-        OnClick="SaveQuiz">
+        OnClick="QuizService.InitSaveQuiz">
         <MudIcon Icon="@Icons.Material.Filled.Save" />
         Save
     </MudButton>
@@ -73,9 +73,9 @@ else
                     <MudTd>
                         <MudStack Justify="Justify.FlexEnd" Row>
                             <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Edit" Color="Color.Info"
-                                OnClick="() => EditQuestion(context)" />
+                                OnClick="() => QuestionService.InitEditQuestion(context)" />
                             <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                                OnClick="() => DeleteQuestion(context)" />
+                                OnClick="() => QuestionService.InitDeleteQuestion(context)" />
                         </MudStack>
                     </MudTd>
                 </RowTemplate>
@@ -85,71 +85,27 @@ else
 }
 
 @code {
-
     [Parameter]
     public int QuizId { get; set; } = 0;
-
     public MudTheme Theme = new MudTheme();
+    public Quiz CurrentQuiz { get => QuizService.SelectedQuiz; }
+    public Question CurrentQuestion { get => QuestionService.SelectedQuestion; }
+    private ManageQuizService QuizService;
+    private ManageQuestionService QuestionService;
 
-    public Quiz CurrentQuiz { get; set; }
-    public Question CurrentQuestion { get; set; }
     public string Title => QuizId != 0 ? "Edit Quiz" : "Create Quiz";
     public string SaveButtonLabel => CurrentQuestion.Id != 0 ? "Update Question" : "Create Question";
 
     protected override async Task OnInitializedAsync()
     {
-
-        if (QuizId != 0)
-        {
-            CurrentQuiz = await quizRepository.Get(QuizId);
-            CurrentQuestion = new Question();
-        }
-        else
-        {
-            navigationManager.NavigateTo("/manage-quizzes");
-        }
-    }
-
-    private async void SaveQuiz()
-    {
-        await quizRepository.Update(CurrentQuiz);
-        navigationManager.NavigateTo("/manage-quizzes");
+        QuizService = new ManageQuizService(quizRepository, navigationManager, js);
+        QuestionService = new ManageQuestionService(questionRepository, navigationManager, js);
+        await QuizService.LoadQuiz(QuizId);
     }
 
     private async void SaveQuestion()
     {
-
-        CurrentQuestion.Options.ForEach(o => o.IsCorrect = false);
-        CurrentQuestion.Options[0].IsCorrect = true;
-        if (CurrentQuestion.Id == 0)
-        {
-            CurrentQuestion.QuizId = CurrentQuiz.Id;
-            CurrentQuiz.Questions.Add(CurrentQuestion);
-            questionRepository.Create(CurrentQuestion);
-        }
-        else
-        {
-            var index = CurrentQuiz.Questions.FindIndex(q => q.Id == CurrentQuestion.Id);
-            CurrentQuiz.Questions[index] = CurrentQuestion;
-            questionRepository.Update(CurrentQuestion);
-        }
-        CurrentQuestion = new Question();
-    }
-
-
-    private void EditQuestion(Question question)
-    {
-        question.Options = question.Options.OrderBy(o => o.IsCorrect ? 0 : 1).ToList();
-        CurrentQuestion = question;
-    }
-
-    private async Task DeleteQuestion(Question question)
-    {
-        var confirm = await js.InvokeAsync<bool>("confirm", $"Are you sure you want to delete {question.Text}?");
-        if (confirm && question.Id != 0)
-        {
-            CurrentQuiz.Questions.Remove(question);
-            await questionRepository.DeleteByQuiz(question.Id);
-        }
+        QuestionService.InitSaveQuestion(QuizId);
+        QuizService.UpdateSelectedQuiz(CurrentQuestion);
     }
 }
