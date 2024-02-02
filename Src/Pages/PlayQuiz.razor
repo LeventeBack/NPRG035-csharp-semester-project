@@ -1,0 +1,105 @@
+@page "/play-quiz/{QuizId:int}"
+@rendermode InteractiveServer
+
+@inject IJSRuntime js
+@inject NavigationManager navigationManager
+@inject QuizRepository quizRepository
+
+<PageTitle>Play Quiz</PageTitle>
+
+@if (ActiveQuiz is null)
+{
+    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="height: 100vh;">
+
+    <MudProgressCircular Color="Color.Warning" Indeterminate="true" />
+</MudStack>
+}
+else if (quizGamePlay != null && quizGamePlay.HasEnded)
+{
+    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="height: 100vh;">
+
+
+    <MainTitle Text="The game has ended" />
+    <br>
+    <ScoreBoard Text="Final Score" Score="@quizGamePlay.Score" Total="@quizGamePlay.CurrentRound" />
+    <br>
+    <br>
+    <LinkButton Href="/select-quiz" Color="Color.Info">
+        Play again
+        <MudIcon Icon="@Icons.Material.Filled.PlayArrow" Class="mr-2" />
+    </LinkButton>
+</MudStack>
+}
+else
+{
+    <MudStack Justify="Justify.SpaceBetween" Class="h-full py-10 px-2">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+        <MudItem md="7" lg="9" Class="px-8">
+            <MudText Typo="Typo.h2" Style="color: white; font-weight: bold;" class="mb-16">
+                @ActiveQuiz.Title <span style="font-size: 2rem"> (Question @quizGamePlay.CurrentRound)</span>
+            </MudText>
+            <MudText Typo="Typo.body1" Style="color: white; font-size: 4rem; font-weight: bold; text-align: center">
+                @CurrentQuestion.Text
+            </MudText>
+        </MudItem>
+        <ScoreBoard Text="Current Score" Score="@quizGamePlay.Score" Total="@quizGamePlay.CurrentRound" />
+    </MudStack>
+    <MudGrid Spacing="6">
+        @foreach (Option option in CurrentQuestion.Options)
+            {
+                <MudItem md="6" Style="width: 100%;">
+                    <OptionButton Color="@quizGamePlay.GetOptionColor(option)" Text="@option.Text"
+                        OnClick="() => HandleOptionClick(option)" />
+                </MudItem>
+            }
+        </MudGrid>
+        <audio id="player">
+            <source id="playerSource" src="" />
+        </audio>
+        <script>
+            window.PlayAudioFile = (src) => {
+                const audio = document.getElementById('player');
+                if (audio != null) {
+                    const audioSource = document.getElementById('playerSource');
+                    if (audioSource != null) {
+                        audioSource.src = src;
+                        audio.load();
+                        audio.play();
+                    }
+                }
+            }
+        </script>
+
+    </MudStack>
+
+}
+
+@code {
+    [Parameter]
+    public int QuizId { get; set; } = 0;
+
+    public Quiz ActiveQuiz { get; set; }
+
+    public QuizGamePlayService? quizGamePlay { get; set; }
+
+    public Question CurrentQuestion { get => quizGamePlay.GetCurrentQuestion(); }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ActiveQuiz = await quizRepository.Get(QuizId);
+        quizGamePlay = new QuizGamePlayService(ActiveQuiz);
+    }
+
+    public async Task HandleOptionClick(Option option)
+    {
+        if (quizGamePlay.HasAnswered) return;
+
+        quizGamePlay.HandleOptionClick(option);
+
+        string audioSrc = quizGamePlay.IsCorrect ? "/sounds/correct.wav" : "/sounds/wrong.wav";
+        await js.InvokeVoidAsync("PlayAudioFile", audioSrc);
+
+        await Task.Delay(QuizGamePlayService.NEXT_QUESTION_DELAY);
+        quizGamePlay.NextQuestion();
+    }
+}

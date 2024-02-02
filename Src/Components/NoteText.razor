@@ -1,0 +1,8 @@
+<MudText Style="color: white; font-size: 2rem; text-align: center;" Class="my-16">
+    @ChildContent
+</MudText>
+
+@code {
+    [Parameter] 
+    public RenderFragment? ChildContent { get; set; }
+}

@@ -1,0 +1,155 @@
+@page "/manage-questions/{QuizId:int}"
+
+@rendermode InteractiveServer
+
+@inject IJSRuntime js
+@inject NavigationManager navigationManager
+@inject QuizRepository quizRepository
+@inject QuestionRepository questionRepository
+
+<PageTitle>@Title</PageTitle>
+
+<MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" class="py-10 px-6">
+    <MudButton Color="Color.Info" Variant="Variant.Filled" Style="min-width: 320px; font-size: 1.6rem;"
+        OnClick="SaveQuiz">
+        <MudIcon Icon="@Icons.Material.Filled.Save" />
+        Save
+    </MudButton>
+</MudStack>
+
+@if (CurrentQuiz == null)
+{
+    <NoteText>Loading...</NoteText>
+}
+else
+{
+    <MudContainer MaxWidth="MaxWidth.Medium">
+    <MudTextField @bind-Value="CurrentQuiz.Title" Variant="Variant.Outlined" Label="Quiz Title">
+    </MudTextField>
+</MudContainer>
+    <MudDivider Class="divider" />
+    <MudContainer MaxWidth="MaxWidth.Medium">
+
+        <MudForm Model="@CurrentQuestion" OnSubmit=@SaveQuestion>
+            <MudTextField @bind-Value="CurrentQuestion.Text" Label="Question Text" Variant="Variant.Outlined"
+                Class="my-5" />
+            <MudGrid Class="my-5">
+                @for (int i = 0; i < QuizGamePlayService.OPTION_COUNT; i++)
+                {
+                    var index = i;
+                    var label = index == 0 ? "Correct Answer" : "Wrong Answer " + i;
+                    var bgColor = index == 0 ? Theme.Palette.SuccessDarken : Theme.Palette.ErrorDarken;
+                    <MudItem xs="12" sm="6">
+                        <MudTextField Style="@($"background:{bgColor};")" Label="@label"
+                            @bind-Value="CurrentQuestion.Options[index].Text" Variant="Variant.Outlined" />
+                    </MudItem>
+                }
+            </MudGrid>
+
+            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick=@SaveQuestion>
+                @SaveButtonLabel
+            </MudButton>
+        </MudForm>
+
+
+    </MudContainer>
+    <MudDivider Class="divider" />
+    <MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
+        @if (CurrentQuiz.Questions.Count == 0)
+        {
+            <NoteText>No questions added yet.</NoteText>
+        }
+        else
+        {
+            <MudText Typo="Typo.h6">Questions</MudText>
+            <MudTable Items="@CurrentQuiz.Questions" Hover="true" Style="background-color: transparent; color: white"
+                Class="custom-table">
+                <HeaderContent>
+                    <MudTh>Question Text</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Question Text">@context.Text</MudTd>
+                    <MudTd>
+                        <MudStack Justify="Justify.FlexEnd" Row>
+                            <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Edit" Color="Color.Info"
+                                OnClick="() => EditQuestion(context)" />
+                            <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                OnClick="() => DeleteQuestion(context)" />
+                        </MudStack>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+        </MudContainer>
+}
+
+@code {
+
+    [Parameter]
+    public int QuizId { get; set; } = 0;
+
+    public MudTheme Theme = new MudTheme();
+
+    public Quiz CurrentQuiz { get; set; }
+    public Question CurrentQuestion { get; set; }
+    public string Title => QuizId != 0 ? "Edit Quiz" : "Create Quiz";
+    public string SaveButtonLabel => CurrentQuestion.Id != 0 ? "Update Question" : "Create Question";
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        if (QuizId != 0)
+        {
+            CurrentQuiz = await quizRepository.Get(QuizId);
+            CurrentQuestion = new Question();
+        }
+        else
+        {
+            navigationManager.NavigateTo("/manage-quizzes");
+        }
+    }
+
+    private async void SaveQuiz()
+    {
+        await quizRepository.Update(CurrentQuiz);
+        navigationManager.NavigateTo("/manage-quizzes");
+    }
+
+    private async void SaveQuestion()
+    {
+
+        CurrentQuestion.Options.ForEach(o => o.IsCorrect = false);
+        CurrentQuestion.Options[0].IsCorrect = true;
+        if (CurrentQuestion.Id == 0)
+        {
+            CurrentQuestion.QuizId = CurrentQuiz.Id;
+            CurrentQuiz.Questions.Add(CurrentQuestion);
+            questionRepository.Create(CurrentQuestion);
+        }
+        else
+        {
+            var index = CurrentQuiz.Questions.FindIndex(q => q.Id == CurrentQuestion.Id);
+            CurrentQuiz.Questions[index] = CurrentQuestion;
+            questionRepository.Update(CurrentQuestion);
+        }
+        CurrentQuestion = new Question();
+    }
+
+
+    private void EditQuestion(Question question)
+    {
+        question.Options = question.Options.OrderBy(o => o.IsCorrect ? 0 : 1).ToList();
+        CurrentQuestion = question;
+    }
+
+    private async Task DeleteQuestion(Question question)
+    {
+        var confirm = await js.InvokeAsync<bool>("confirm", $"Are you sure you want to delete {question.Text}?");
+        if (confirm && question.Id != 0)
+        {
+            CurrentQuiz.Questions.Remove(question);
+            await questionRepository.DeleteByQuiz(question.Id);
+        }
+    }
+}

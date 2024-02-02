@@ -1,0 +1,94 @@
+﻿@page "/manage-quizzes"
+@rendermode InteractiveServer
+
+@inject IJSRuntime js
+@inject NavigationManager navigationManager
+@inject QuizRepository quizRepository
+
+<MyMudProviders />
+
+<PageTitle>Manage Quizzes</PageTitle>
+
+
+<MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" class="py-10 px-6">
+    <LinkButton Href="/" Color="Color.Info">
+        <MudIcon Icon="@Icons.Material.Filled.ArrowBack" />
+        Back
+    </LinkButton>
+    <MainTitle Text="Manage Quizzes" />
+    <MudButton Color="Color.Info" Variant="Variant.Filled" Style="min-width: 320px; font-size: 1.6rem;"
+        OnClick="InitCreateQuiz">
+        Create New
+        <MudIcon Icon="@Icons.Material.Filled.Add" />
+    </MudButton>
+</MudStack>
+
+@if (Quizzes == null)
+{
+    <NoteText>Loading...</NoteText>
+}
+else if (Quizzes.Count == 0)
+{
+    <NoteText>No games found.</NoteText>
+}
+else
+{
+    <MudContainer MaxWidth="MaxWidth.Medium">
+
+    <MudTable Items="@Quizzes" Hover="true" Style="background-color: transparent; color: white" Class="custom-table">
+        <HeaderContent>
+            <MudTh>Title</MudTh>
+            <MudTh>Nr. of questions</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel=" Title">@context.Title</MudTd>
+            <MudTd DataLabel="Nr. of questions">@context.Questions.Count</MudTd>
+            <MudTd>
+                <MudStack Justify="Justify.FlexEnd" Row>
+
+                    <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Edit" Color="Color.Info"
+                        OnClick="() => EditQuiz(context)" />
+                    <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                        OnClick="() => DeleteQuiz(context)" />
+                </MudStack>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
+
+}
+@code {
+
+    List<Quiz> Quizzes { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        Quizzes = await quizRepository.Get();
+    }
+
+    private async Task InitCreateQuiz()
+    {
+        var quiz = new Quiz();
+        quiz.Title = "New Quiz";
+        int id = await quizRepository.Create(quiz);
+        quiz.Id = id;
+
+        navigationManager.NavigateTo($"/manage-questions/{id}");
+    }
+
+    private void EditQuiz(Quiz quiz)
+    {
+        navigationManager.NavigateTo($"/manage-questions/{quiz.Id}");
+    }
+
+    private async Task DeleteQuiz(Quiz quiz)
+    {
+        var confirm = await js.InvokeAsync<bool>("confirm", $"Are you sure you want to delete {quiz.Title}?");
+        if (confirm)
+        {
+            await quizRepository.Delete(quiz.Id);
+            Quizzes.Remove(quiz);
+        }
+    }
+
+}

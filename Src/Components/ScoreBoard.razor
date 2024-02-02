@@ -1,0 +1,18 @@
+<MudStack md="5" lg="3" Style="color: white; min-width: 300px; border-radius: 2rem; padding: 1rem;"
+    Class="mud-info pa-5 mx-16" AlignItems="AlignItems.Center" Justify="Justify.Center">
+    <MudText Typo="Typo.h4">@Text</MudText>
+    <MudText Typo="Typo.h2" style=" font-weight: bold;">@Score /
+        @Total </MudText>
+</MudStack>
+
+
+@code {
+    [Parameter]
+    public string Text { get; set; }
+
+    [Parameter]
+    public int Total { get; set; }
+
+    [Parameter]
+    public int Score { get; set; }
+}

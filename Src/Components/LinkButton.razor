@@ -1,0 +1,11 @@
+@namespace QuizEdu.Src.Components
+
+<MudButton Color="@Color" Variant="Variant.Filled" Style="min-width: 320px; font-size: 1.6rem;" Href="@Href">
+    @ChildContent
+</MudButton>
+
+@code {
+    [Parameter] public Color Color { get; set; }
+    [Parameter] public string Href { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
