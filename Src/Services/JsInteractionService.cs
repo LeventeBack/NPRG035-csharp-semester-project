@@ -27,4 +27,14 @@ public class JsInteractionService
 
         return confirm;
     }
+
+    public async Task PlayAudio(string audioSrc)
+    {
+        if (_jsRuntime == null)
+        {
+            return;
+        }
+
+        await _jsRuntime.InvokeVoidAsync("PlayAudioFile", audioSrc);
+    }
 }

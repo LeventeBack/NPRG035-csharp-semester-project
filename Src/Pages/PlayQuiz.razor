@@ -14,14 +14,14 @@
     <MudProgressCircular Color="Color.Warning" Indeterminate="true" />
 </MudStack>
 }
-else if (quizGamePlay != null && quizGamePlay.HasEnded)
+else if (QuizGamePlay != null && QuizGamePlay.HasEnded)
 {
     <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="height: 100vh;">
 
 
     <MainTitle Text="The game has ended" />
     <br>
-    <ScoreBoard Text="Final Score" Score="@quizGamePlay.Score" Total="@quizGamePlay.CurrentRound" />
+    <ScoreBoard Text="Final Score" Score="@QuizGamePlay.Score" Total="@QuizGamePlay.CurrentRound" />
     <br>
     <br>
     <LinkButton Href="/select-quiz" Color="Color.Info">
@@ -36,20 +36,20 @@ else
     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
         <MudItem md="7" lg="9" Class="px-8">
             <MudText Typo="Typo.h2" Style="color: white; font-weight: bold;" class="mb-16">
-                @ActiveQuiz.Title <span style="font-size: 2rem"> (Question @quizGamePlay.CurrentRound)</span>
+                @ActiveQuiz.Title <span style="font-size: 2rem"> (Question @QuizGamePlay.CurrentRound)</span>
             </MudText>
             <MudText Typo="Typo.body1" Style="color: white; font-size: 4rem; font-weight: bold; text-align: center">
                 @CurrentQuestion.Text
             </MudText>
         </MudItem>
-        <ScoreBoard Text="Current Score" Score="@quizGamePlay.Score" Total="@quizGamePlay.CurrentRound" />
+        <ScoreBoard Text="Current Score" Score="@QuizGamePlay.Score" Total="@QuizGamePlay.CurrentRound" />
     </MudStack>
     <MudGrid Spacing="6">
         @foreach (Option option in CurrentQuestion.Options)
             {
                 <MudItem md="6" Style="width: 100%;">
-                    <OptionButton Color="@quizGamePlay.GetOptionColor(option)" Text="@option.Text"
-                        OnClick="() => HandleOptionClick(option)" />
+                    <OptionButton Color="@QuizGamePlay.GetOptionColor(option)" Text="@option.Text"
+                        OnClick="() => QuizGamePlay.HandleOptionClick(option)" />
                 </MudItem>
             }
         </MudGrid>
@@ -80,26 +80,13 @@ else
 
     public Quiz ActiveQuiz { get; set; }
 
-    public QuizGamePlayService? quizGamePlay { get; set; }
+    public QuizGamePlayService? QuizGamePlay { get; set; }
 
-    public Question CurrentQuestion { get => quizGamePlay.GetCurrentQuestion(); }
+    public Question CurrentQuestion { get => QuizGamePlay.GetCurrentQuestion(); }
 
     protected override async Task OnInitializedAsync()
     {
         ActiveQuiz = await quizRepository.Get(QuizId);
-        quizGamePlay = new QuizGamePlayService(ActiveQuiz);
-    }
-
-    public async Task HandleOptionClick(Option option)
-    {
-        if (quizGamePlay.HasAnswered) return;
-
-        quizGamePlay.HandleOptionClick(option);
-
-        string audioSrc = quizGamePlay.IsCorrect ? "/sounds/correct.wav" : "/sounds/wrong.wav";
-        await js.InvokeVoidAsync("PlayAudioFile", audioSrc);
-
-        await Task.Delay(QuizGamePlayService.NEXT_QUESTION_DELAY);
-        quizGamePlay.NextQuestion();
+        QuizGamePlay = new QuizGamePlayService(ActiveQuiz, js);
     }
 }

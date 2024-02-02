@@ -8,25 +8,24 @@ namespace QuizEdu.Src.Services;
 
 public class QuizGamePlayService
 {
+    public const string CORRECT_AUDIO = "/sounds/correct.wav";
+    public const string WRONG_AUDIO = "/sounds/wrong.wav";
     public const int NEXT_QUESTION_DELAY = 4000;
     public const int OPTION_COUNT = 4;
+
     private Quiz _quiz { get; set; }
     private int _score { get; set; } = 0;
     private int _currentIndex { get; set; } = 0;
     private bool _hasEnded { get; set; } = false;
     private Option _selectedOption { get; set; }
+    private JsInteractionService _jsInteraction;
 
-    public bool HasAnswered => _selectedOption != null;
-    public bool HasEnded => _hasEnded;
-    public bool IsCorrect => _selectedOption.IsCorrect;
-    public int Score => _score;
-    public int CurrentRound => _currentIndex + 1;
-
-    public QuizGamePlayService(Quiz activeQuiz)
+    public QuizGamePlayService(Quiz activeQuiz, IJSRuntime jSRuntime)
     {
         _quiz = activeQuiz;
         Shuffle(_quiz.Questions);
         ShuffleOptions();
+        _jsInteraction = new JsInteractionService(jSRuntime);
     }
 
     public Question GetCurrentQuestion()
@@ -54,9 +53,15 @@ public class QuizGamePlayService
     {
         if (HasAnswered) return;
 
+        string audioSrc = option.IsCorrect ? CORRECT_AUDIO : WRONG_AUDIO;
+        await _jsInteraction.PlayAudio(audioSrc);
+
         _selectedOption = option;
 
         if (option.IsCorrect) _score++;
+
+        await Task.Delay(NEXT_QUESTION_DELAY);
+        NextQuestion();
     }
 
     public void NextQuestion()
@@ -92,5 +97,11 @@ public class QuizGamePlayService
             list[n] = value;
         }
     }
+
+    public bool HasAnswered => _selectedOption != null;
+    public bool HasEnded => _hasEnded;
+    public bool IsCorrect => _selectedOption.IsCorrect;
+    public int Score => _score;
+    public int CurrentRound => _currentIndex + 1;
 
 }
