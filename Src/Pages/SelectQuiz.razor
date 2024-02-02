@@ -43,7 +43,8 @@ else
             <MudTd>
                 <MudStack Justify="Justify.FlexEnd" Row>
 
-                    <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="@(() => StartQuiz(context))">
+                    <MudButton Color="Color.Warning" Variant="Variant.Filled"
+                        OnClick="@(() => Service.InitStartQuiz(context))">
                         <MudIcon Icon="@Icons.Material.Filled.PlayArrow" />
                         Start
                     </MudButton>
@@ -60,20 +61,13 @@ else
     </MudStack>
 }
 
-}
-
 @code {
-    List<Quiz> Quizzes;
+    private ManageQuizService Service { get; set; }
+    private List<Quiz> Quizzes { get => Service.Quizzes; }
 
     protected override async Task OnInitializedAsync()
     {
-        List<Quiz> allQuizGames = await quizRepository.Get();
-        Quizzes = allQuizGames.Where(q => q.Questions.Count > 0).ToList();
+        Service = new ManageQuizService(quizRepository, navigationManager);
+        await Service.LoadNonEmptyQuizzes();
     }
-
-    void StartQuiz(Quiz quiz)
-    {
-        navigationManager.NavigateTo($"/play-quiz/{quiz.Id}");
-    }
-
 }

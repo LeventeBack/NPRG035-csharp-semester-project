@@ -1,25 +1,26 @@
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using QuizEdu.Src.Models;
-using Microsoft.AspNetCore.Components;
 
 namespace QuizEdu.Src.Services;
 
 public class ManageQuizService
 {
-    private QuizRepository _repository;
-    private NavigationManager _navigationManager;
-    private IJSRuntime _jsRuntime;
+    private QuizRepository? _repository;
+    private NavigatorService _navigator;
+    private JsInteractionService _jsInteraction;
 
-    public List<Quiz> Quizzes;
+    public List<Quiz>? Quizzes;
 
     public ManageQuizService(
         QuizRepository repository,
-        NavigationManager navigationManager, IJSRuntime jsRuntime
+        NavigationManager navigationManager,
+        IJSRuntime jsRuntime = null
     )
     {
         _repository = repository;
-        _navigationManager = navigationManager;
-        _jsRuntime = jsRuntime;
+        _navigator = new NavigatorService(navigationManager);
+        _jsInteraction = new JsInteractionService(jsRuntime);
     }
 
     public async Task LoadQuizzes()
@@ -27,24 +28,41 @@ public class ManageQuizService
         Quizzes = await _repository.Get();
     }
 
+    public void InitStartQuiz(Quiz quiz)
+    {
+        if (quiz != null)
+        {
+            _navigator.GoToQuiz(quiz.Id);
+        }
+    }
+
     public async Task InitCreateQuiz()
     {
         Quiz quiz = new Quiz() { Title = "New Quiz" };
         int quizId = await _repository.Create(quiz);
-        _navigationManager.NavigateTo($"/manage-questions/{quizId}");
+        _navigator.GoToManageQuestions(quizId);
     }
     public void InitEditQuiz(Quiz quiz)
     {
-        _navigationManager.NavigateTo($"/manage-questions/{quiz.Id}");
+        if (quiz != null)
+        {
+            _navigator.GoToManageQuestions(quiz.Id);
+        }
     }
 
     public async Task InitDeleteQuiz(Quiz quiz)
     {
-        var confirm = await _jsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete {quiz.Title}?");
+        var confirm = await _jsInteraction.ConfirmDelete(quiz.Title);
         if (confirm)
         {
             await _repository.Delete(quiz.Id);
             Quizzes.Remove(quiz);
         }
+    }
+
+    public async Task LoadNonEmptyQuizzes()
+    {
+        await LoadQuizzes();
+        Quizzes = Quizzes.Where(q => q.Questions.Count > 0).ToList();
     }
 }
