@@ -17,7 +17,7 @@
     </LinkButton>
     <MainTitle Text="Manage Quizzes" />
     <MudButton Color="Color.Info" Variant="Variant.Filled" Style="min-width: 320px; font-size: 1.6rem;"
-        OnClick="InitCreateQuiz">
+        OnClick="Service.InitCreateQuiz">
         Create New
         <MudIcon Icon="@Icons.Material.Filled.Add" />
     </MudButton>
@@ -48,9 +48,9 @@ else
                 <MudStack Justify="Justify.FlexEnd" Row>
 
                     <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Edit" Color="Color.Info"
-                        OnClick="() => EditQuiz(context)" />
+                        OnClick="() => Service.InitEditQuiz(context)" />
                     <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                        OnClick="() => DeleteQuiz(context)" />
+                        OnClick="() => Service.InitDeleteQuiz(context)" />
                 </MudStack>
             </MudTd>
         </RowTemplate>
@@ -59,36 +59,12 @@ else
 
 }
 @code {
+    private ManageQuizService Service { get; set; }
+    private List<Quiz> Quizzes { get => Service.Quizzes; }
 
-    List<Quiz> Quizzes { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        Quizzes = await quizRepository.Get();
+        Service = new ManageQuizService(quizRepository, navigationManager, js);
+        await Service.LoadQuizzes();
     }
-
-    private async Task InitCreateQuiz()
-    {
-        var quiz = new Quiz();
-        quiz.Title = "New Quiz";
-        int id = await quizRepository.Create(quiz);
-        quiz.Id = id;
-
-        navigationManager.NavigateTo($"/manage-questions/{id}");
-    }
-
-    private void EditQuiz(Quiz quiz)
-    {
-        navigationManager.NavigateTo($"/manage-questions/{quiz.Id}");
-    }
-
-    private async Task DeleteQuiz(Quiz quiz)
-    {
-        var confirm = await js.InvokeAsync<bool>("confirm", $"Are you sure you want to delete {quiz.Title}?");
-        if (confirm)
-        {
-            await quizRepository.Delete(quiz.Id);
-            Quizzes.Remove(quiz);
-        }
-    }
-
 }
