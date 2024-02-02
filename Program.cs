@@ -19,6 +19,7 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<QuizRepository>();
 builder.Services.AddScoped<QuestionRepository>();
+builder.Services.AddScoped<QuizCombinationRepository>();
 
 
 var app = builder.Build();

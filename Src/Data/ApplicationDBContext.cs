@@ -12,8 +12,8 @@ public class ApplicationDBContext : DbContext
         optionsBuilder.UseLoggerFactory(LoggerFactory.Create(builder => builder.AddConsole()));
     }
 
-
     public DbSet<Question> Questions { get; set; }
     public DbSet<Quiz> Quizzes { get; set; }
     public DbSet<Option> Options { get; set; }
+    public DbSet<QuizCombination> QuizCombinations { get; set; }
 }
