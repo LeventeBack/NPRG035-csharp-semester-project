@@ -16,49 +16,48 @@
 
 @if (Quizzes == null)
 {
-    <NoteText>Loading...</NoteText>
+        <NoteText>Loading...</NoteText>
 }
 else if (Quizzes.Count == 0)
 {
-    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center">
-    <NoteText>No games found.</NoteText>
-    <LinkButton Href="/" Color="Color.Info">
-        <MudIcon Icon="@Icons.Material.Filled.ArrowBack" />
-        Back
-    </LinkButton>
-</MudStack>
-}
-else
-{
-    <MudContainer MaxWidth="MaxWidth.Medium">
-    <MudTable Items="@Quizzes" Hover="true" Style="background-color: transparent; color: white" Class="custom-table">
-        <HeaderContent>
-            <MudTh>Title</MudTh>
-            <MudTh Style="text-align: center;">Number of questions</MudTh>
-            <MudTh></MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel=" Title">@context.Title</MudTd>
-            <MudTd DataLabel="Nr. of questions" Style="text-align: center;">@context.Questions.Count</MudTd>
-            <MudTd>
-                <MudStack Justify="Justify.FlexEnd" Row>
-
-                    <MudButton Color="Color.Warning" Variant="Variant.Filled"
-                        OnClick="@(() => Service.InitStartQuiz(context))">
-                        <MudIcon Icon="@Icons.Material.Filled.PlayArrow" />
-                        Start
-                    </MudButton>
-                </MudStack>
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
-</MudContainer>
-    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="my-16">
+        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center">
+        <NoteText>No games found.</NoteText>
         <LinkButton Href="/" Color="Color.Info">
             <MudIcon Icon="@Icons.Material.Filled.ArrowBack" />
             Back
         </LinkButton>
     </MudStack>
+}
+else
+{
+        <MudContainer MaxWidth="MaxWidth.Medium">
+        <MudTable Items="@Quizzes" Hover="true" Style="background-color: transparent; color: white" Class="custom-table">
+            <HeaderContent>
+                <MudTh>Title</MudTh>
+                <MudTh Style="text-align: center;">Number of questions</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel=" Title">@context.Title</MudTd>
+                <MudTd DataLabel="Nr. of questions" Style="text-align: center;">@context.Questions.Count</MudTd>
+                <MudTd>
+                    <MudStack Justify="Justify.FlexEnd" Row>
+                        <MudButton Color="Color.Warning" Variant="Variant.Filled"
+                            OnClick="@(() => Service.InitStartQuiz(context))">
+                            <MudIcon Icon="@Icons.Material.Filled.PlayArrow" />
+                            Start
+                        </MudButton>
+                    </MudStack>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudContainer>
+        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="my-16">
+            <LinkButton Href="/" Color="Color.Info">
+                <MudIcon Icon="@Icons.Material.Filled.ArrowBack" />
+                Back
+            </LinkButton>
+        </MudStack>
 }
 
 @code {
