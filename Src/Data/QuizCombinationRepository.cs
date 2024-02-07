@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using QuizEdu.Src.Models;
 
-namespace QuizEdu.Src.Services;
+namespace QuizEdu.Src.Data;
 
 public class QuizCombinationRepository
 {
