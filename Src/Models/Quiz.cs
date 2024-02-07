@@ -2,7 +2,13 @@ namespace QuizEdu.Src.Models;
 
 public class Quiz
 {
-    public const int DEFAULT_QUIZ_TYPE = 0;
+    public enum QuizType
+    {
+        Normal = 0,
+        Combined = 1
+    }
+
+    public const QuizType DEFAULT_QUIZ_TYPE = QuizType.Normal;
     public const int DEFAULT_ROUND_COUNT = 10;
 
     public int Id { get; set; }
@@ -20,7 +26,7 @@ public class Quiz
     {
         Title = "";
         Questions = new List<Question>();
-        Type = DEFAULT_QUIZ_TYPE;
+        Type = (int)DEFAULT_QUIZ_TYPE;
         RoundCount = DEFAULT_ROUND_COUNT;
     }
 }

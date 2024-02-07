@@ -15,10 +15,14 @@
         <MudIcon Icon="@Icons.Material.Filled.ArrowBack" />
         Back
     </LinkButton>
-    <MainTitle Text="Manage Quizzes" />
     <MudButton Color="Color.Info" Variant="Variant.Filled" Style="min-width: 320px; font-size: 1.6rem;"
         OnClick="Service.InitCreateQuiz">
-        Create New
+        Create New <br>
+        <MudIcon Icon="@Icons.Material.Filled.Add" />
+    </MudButton>
+    <MudButton Color="Color.Info" Variant="Variant.Filled" Style="min-width: 320px; font-size: 1.6rem;"
+        OnClick="Service.InitCreateCombinedQuiz">
+        Combine existing
         <MudIcon Icon="@Icons.Material.Filled.Add" />
     </MudButton>
 </MudStack>

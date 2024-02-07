@@ -6,6 +6,7 @@
 @inject NavigationManager navigationManager
 @inject QuizRepository quizRepository
 @inject QuestionRepository questionRepository
+@inject QuizCombinationRepository quizCombinationRepository
 
 <PageTitle>@Title</PageTitle>
 
@@ -25,73 +26,113 @@ else
 {
     <MudContainer MaxWidth="MaxWidth.Medium">
     <MudTextField @bind-Value="CurrentQuiz.Title" Variant="Variant.Outlined" Label="Quiz Title" />
-    <MudNumericField @bind-Value="CurrentQuiz.RoundCount" Variant="Variant.Outlined" Label="Round count " Class="my-5" />
+    <MudNumericField @bind-Value="CurrentQuiz.RoundCount" Variant="Variant.Outlined" Label="Round count "
+        Class="my-5" />
 </MudContainer>
     <MudDivider Class="divider" />
-    <MudContainer MaxWidth="MaxWidth.Medium">
 
-        <MudForm Model="@CurrentQuestion" OnSubmit=@SaveQuestion>
-            <MudTextField @bind-Value="CurrentQuestion.Text" Label="Question Text" Variant="Variant.Outlined"
-                Class="my-5" />
-            <MudGrid Class="my-5">
-                @for (int i = 0; i < QuizGamePlayService.OPTION_COUNT; i++)
-                {
-                    var index = i;
-                    var label = index == 0 ? "Correct Answer" : "Wrong Answer " + i;
-                    var bgColor = index == 0 ? Theme.Palette.SuccessDarken : Theme.Palette.ErrorDarken;
-                    <MudItem xs="12" sm="6">
-                        <MudTextField Style="@($"background:{bgColor};")" Label="@label"
-                            @bind-Value="CurrentQuestion.Options[index].Text" Variant="Variant.Outlined" />
-                    </MudItem>
-                }
-            </MudGrid>
+    @if (CurrentQuiz.Type == 0)
+    {
+        <MudContainer MaxWidth="MaxWidth.Medium">
 
-            <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick=@SaveQuestion>
-                @SaveButtonLabel
-            </MudButton>
-        </MudForm>
+    <MudForm Model="@CurrentQuestion" OnSubmit=@SaveQuestion>
+        <MudTextField @bind-Value="CurrentQuestion.Text" Label="Question Text" Variant="Variant.Outlined"
+            Class="my-5" />
+        <MudGrid Class="my-5">
+            @for (int i = 0; i < QuizGamePlayService.OPTION_COUNT; i++)
+                    {
+                        var index = i;
+                        var label = index == 0 ? "Correct Answer" : "Wrong Answer " + i;
+                        var bgColor = index == 0 ? Theme.Palette.SuccessDarken : Theme.Palette.ErrorDarken;
+                        <MudItem xs="12" sm="6">
+                            <MudTextField Style="@($"background:{bgColor};")" Label="@label"
+                                @bind-Value="CurrentQuestion.Options[index].Text" Variant="Variant.Outlined" />
+                        </MudItem>
+                    }
+                </MudGrid>
+
+                <MudButton Size="Size.Medium" Color="Color.Info" Variant="Variant.Filled" OnClick=@SaveQuestion>
+                    @SaveButtonLabel
+                </MudButton>
+            </MudForm>
 
 
-    </MudContainer>
-    <MudDivider Class="divider" />
-    <MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
-        @if (CurrentQuiz.Questions.Count == 0)
-        {
-            <NoteText>No questions added yet.</NoteText>
-        }
-        else
-        {
-            <MudText Typo="Typo.h6">Questions</MudText>
-            <MudTable Items="@CurrentQuiz.Questions" Hover="true" Style="background-color: transparent; color: white"
-                Class="custom-table">
-                <HeaderContent>
-                    <MudTh>Question Text</MudTh>
-                    <MudTh></MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Question Text">@context.Text</MudTd>
-                    <MudTd>
-                        <MudStack Justify="Justify.FlexEnd" Row>
-                            <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Edit" Color="Color.Info"
-                                OnClick="() => QuestionService.InitEditQuestion(context)" />
-                            <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                                OnClick="() => QuestionService.InitDeleteQuestion(context)" />
+        </MudContainer>
+        <MudDivider Class="divider" />
+
+        <MudContainer MaxWidth="MaxWidth.Medium" Class="mb-16">
+
+            @if (CurrentQuiz.Questions.Count == 0)
+            {
+                <NoteText>No questions added yet.</NoteText>
+            }
+            else
+            {
+                <MudText Typo="Typo.h6" Style="color: white">Questions</MudText>
+                <MudTable Items="@CurrentQuiz.Questions" Hover="true" Style="background-color: transparent; color: white"
+                    Class="custom-table">
+                    <HeaderContent>
+                        <MudTh>Question Text</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Question Text">@context.Text</MudTd>
+                        <MudTd>
+                            <MudStack Justify="Justify.FlexEnd" Row>
+                                <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Edit" Color="Color.Info"
+                                    OnClick="() => QuestionService.InitEditQuestion(context)" />
+                                <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                    OnClick="() => QuestionService.InitDeleteQuestion(context)" />
+                            </MudStack>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            </MudContainer>
+    }
+    else
+    {
+        <MudContainer MaxWidth="MaxWidth.Medium">
+    <MudTable Items="@QuizList" Hover="true" Style="background-color: transparent; color: white" Class="custom-table">
+        <HeaderContent>
+            <MudTh>Quiz title</MudTh>
+            <MudTh>Add/Remove</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Question Text">@context.Title</MudTd>
+            <MudTd>
+                <MudStack Justify="Justify.FlexEnd" Row>
+
+                    @if (QuizCombinationService.IsQuizIncluded(context.Id))
+                            {
+                                <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                    OnClick="() => QuizCombinationService.RemoveQuiz(context.Id)" />
+                            }
+                            else
+                            {
+                                <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Add" Color="Color.Info"
+                                    OnClick="() => QuizCombinationService.AddQuiz(context.Id)" />
+                            }
                         </MudStack>
                     </MudTd>
                 </RowTemplate>
             </MudTable>
-        }
         </MudContainer>
+
+    }
 }
 
 @code {
     [Parameter]
     public int QuizId { get; set; } = 0;
+
+    public List<Quiz> QuizList => QuizCombinationService.QuizList;
     public MudTheme Theme = new MudTheme();
     public Quiz CurrentQuiz { get => QuizService.SelectedQuiz; }
     public Question CurrentQuestion { get => QuestionService.SelectedQuestion; }
     private ManageQuizService QuizService;
     private ManageQuestionService QuestionService;
+    private QuizCombinationService QuizCombinationService;
 
     public string Title => QuizId != 0 ? "Edit Quiz" : "Create Quiz";
     public string SaveButtonLabel => CurrentQuestion.Id != 0 ? "Update Question" : "Create Question";
@@ -101,6 +142,13 @@ else
         QuizService = new ManageQuizService(quizRepository, navigationManager, js);
         QuestionService = new ManageQuestionService(questionRepository, navigationManager, js);
         await QuizService.LoadQuiz(QuizId);
+        if (CurrentQuiz.Type == (int)Quiz.QuizType.Combined)
+        {
+            QuizCombinationService = new QuizCombinationService(
+            quizCombinationRepository,
+            quizRepository, QuizId);
+            await QuizCombinationService.LoadQuizCombinations();
+        }
     }
 
     private async void SaveQuestion()

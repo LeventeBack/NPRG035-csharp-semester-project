@@ -58,6 +58,16 @@ public class ManageQuizService
         _navigator.GoToManageQuestions(quizId);
     }
 
+    public async Task InitCreateCombinedQuiz()
+    {
+        Quiz quiz = new Quiz
+        {
+            Type = 1
+        };
+        int quizId = await _repository.Create(quiz);
+        _navigator.GoToManageQuestions(quizId);
+    }
+
     public void InitEditQuiz(Quiz quiz)
     {
         if (quiz != null)

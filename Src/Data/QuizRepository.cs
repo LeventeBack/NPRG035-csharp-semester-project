@@ -6,12 +6,14 @@ namespace QuizEdu.Src.Data;
 public class QuizRepository
 {
     private readonly ApplicationDBContext _context;
-
     private readonly QuestionRepository _questionRepository;
+    private readonly QuizCombinationRepository _quizCombinationRepository;
+
     public QuizRepository(ApplicationDBContext context)
     {
         this._context = context;
         this._questionRepository = new QuestionRepository(context);
+        this._quizCombinationRepository = new QuizCombinationRepository(context);
     }
 
     public async Task<List<Quiz>> Get()
@@ -51,6 +53,7 @@ public class QuizRepository
 
         await _questionRepository.DeleteByQuiz(id);
         _context.Quizzes.Remove(Quiz);
+        await _quizCombinationRepository.ClearPairsByChildId(id);
 
         await _context.SaveChangesAsync();
     }
