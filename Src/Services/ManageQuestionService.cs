@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using QuizEdu.Src.Models;
+using QuizEdu.Src.Data;
 
 namespace QuizEdu.Src.Services;
 
