@@ -6,7 +6,7 @@ namespace QuizEdu.Src.Services;
 
 public class ManageQuestionService
 {
-    private QuestionRepository? _repository;
+    private QuestionRepository _repository;
     private NavigatorService _navigator;
     private JsInteractionService _jsInteraction;
 

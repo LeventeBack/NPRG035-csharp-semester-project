@@ -24,8 +24,8 @@
 else
 {
     <MudContainer MaxWidth="MaxWidth.Medium">
-    <MudTextField @bind-Value="CurrentQuiz.Title" Variant="Variant.Outlined" Label="Quiz Title">
-    </MudTextField>
+    <MudTextField @bind-Value="CurrentQuiz.Title" Variant="Variant.Outlined" Label="Quiz Title" />
+    <MudNumericField @bind-Value="CurrentQuiz.RoundCount" Variant="Variant.Outlined" Label="Round count " Class="my-5" />
 </MudContainer>
     <MudDivider Class="divider" />
     <MudContainer MaxWidth="MaxWidth.Medium">

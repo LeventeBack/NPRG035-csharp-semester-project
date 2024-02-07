@@ -13,9 +13,10 @@ public class QuizGamePlayService
 
     private Quiz _quiz { get; set; }
     private int _score { get; set; } = 0;
+    private int _roundCount { get; set; }
     private int _currentIndex { get; set; } = 0;
     private bool _hasEnded { get; set; } = false;
-    private Option _selectedOption { get; set; }
+    private Option? _selectedOption { get; set; }
     private JsInteractionService _jsInteraction;
 
     public QuizGamePlayService(Quiz activeQuiz, IJSRuntime jSRuntime)
@@ -24,6 +25,7 @@ public class QuizGamePlayService
         Shuffle(_quiz.Questions);
         ShuffleOptions();
         _jsInteraction = new JsInteractionService(jSRuntime);
+        _roundCount = GetRoundCount();
     }
 
     public Question GetCurrentQuestion()
@@ -64,7 +66,7 @@ public class QuizGamePlayService
 
     public void NextQuestion()
     {
-        if (_currentIndex + 1 >= _quiz.Questions.Count)
+        if (!HasNextQuestion() || !HasNextRound())
         {
             _hasEnded = true;
             return;
@@ -72,6 +74,15 @@ public class QuizGamePlayService
 
         _currentIndex++;
         _selectedOption = null;
+    }
+
+    private int GetRoundCount()
+    {
+        if (_quiz.RoundCount > 0)
+        {
+            return Math.Min(_quiz.RoundCount, _quiz.Questions.Count);
+        }
+        return _quiz.Questions.Count;
     }
 
     private void ShuffleOptions()
@@ -94,6 +105,16 @@ public class QuizGamePlayService
             list[k] = list[n];
             list[n] = value;
         }
+    }
+
+    private bool HasNextQuestion()
+    {
+        return _currentIndex + 1 < _quiz.Questions.Count;
+    }
+
+    private bool HasNextRound()
+    {
+        return _currentIndex + 1 < _roundCount;
     }
 
     public bool HasAnswered => _selectedOption != null;
