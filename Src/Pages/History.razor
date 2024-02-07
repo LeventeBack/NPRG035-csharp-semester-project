@@ -1,0 +1,68 @@
+@page "/history"
+@rendermode InteractiveServer
+
+@inject GameResultRepository repository
+
+<MyMudProviders />
+
+<PageTitle>Game History</PageTitle>
+
+
+<MudStack Row Justify="Justify.Center" Class="my-16">
+    <MainTitle Text="Game History" />
+</MudStack>
+
+
+@if (Service.GameResults == null)
+{
+    <NoteText>Loading...</NoteText>
+}
+else if (Service.GameResults.Count == 0)
+{
+    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center">
+    <NoteText>No previously played games found.</NoteText>
+    <LinkButton Href="/" Color="Color.Info">
+        <MudIcon Icon="@Icons.Material.Filled.ArrowBack" />
+        Back
+    </LinkButton>
+</MudStack>
+}
+else
+{
+    int index = 0;
+    <MudContainer MaxWidth="MaxWidth.Medium">
+    <MudTable Items="@Service.GameResults" Hover="true"
+        Style="background-color: transparent; color: white; text-align: center;" Class="custom-table">
+        <HeaderContent>
+            <MudTh>#</MudTh>
+            <MudTh>Username</MudTh>
+            <MudTh>Quiz</MudTh>
+            <MudTh>Score</MudTh>
+            <MudTh>Date</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@(++index)</MudTd>
+            <MudTd>@context.UserName</MudTd>
+            <MudTd>@context.QuizName</MudTd>
+            <MudTd>@context.Score</MudTd>
+            <MudTd>@context.Date</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
+    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="my-16">
+        <LinkButton Href="/" Color="Color.Info">
+            <MudIcon Icon="@Icons.Material.Filled.ArrowBack" />
+            Back
+        </LinkButton>
+    </MudStack>
+}
+
+@code {
+    private HistoryService Service { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Service = new HistoryService(repository);
+        await Service.LoadHistory();
+    }
+}

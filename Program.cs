@@ -1,6 +1,6 @@
 using MudBlazor.Services;
 using Microsoft.EntityFrameworkCore;
-using QuizEdu.Src.Services;
+using QuizEdu.Src.Data;
 using QuizEdu.Src;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +20,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<QuizRepository>();
 builder.Services.AddScoped<QuestionRepository>();
 builder.Services.AddScoped<QuizCombinationRepository>();
+builder.Services.AddScoped<GameResultRepository>();
 
 
 var app = builder.Build();
