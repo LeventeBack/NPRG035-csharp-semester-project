@@ -29,4 +29,14 @@ public class Quiz
         Type = (int)DEFAULT_QUIZ_TYPE;
         RoundCount = DEFAULT_ROUND_COUNT;
     }
+
+    public bool IsNormalQuiz()
+    {
+        return Type == (int)QuizType.Normal;
+    }
+
+    public bool IsCombinedQuiz()
+    {
+        return Type == (int)QuizType.Combined;
+    }
 }

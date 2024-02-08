@@ -21,7 +21,7 @@ public class QuizRepository
         List<Quiz> quizzes = await _context.Quizzes.ToListAsync();
         foreach (var quiz in quizzes)
         {
-            quiz.Questions = await _questionRepository.GetByQuiz(quiz.Id);
+            quiz.Questions = await _questionRepository.GetByQuiz(quiz);
         }
         return quizzes;
     }
@@ -29,7 +29,8 @@ public class QuizRepository
     public async Task<Quiz> Get(int id)
     {
         Quiz quiz = await _context.Quizzes.FirstOrDefaultAsync(a => a.Id == id);
-        quiz.Questions = await _questionRepository.GetByQuiz(id);
+
+        quiz.Questions = await _questionRepository.GetByQuiz(quiz);
 
         return quiz;
     }
@@ -56,5 +57,33 @@ public class QuizRepository
         await _quizCombinationRepository.ClearPairsByChildId(id);
 
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> IsQuizPlayable(int id)
+    {
+        var quiz = await _context.Quizzes.FirstOrDefaultAsync(a => a.Id == id);
+        if (quiz == null)
+        {
+            return false;
+        }
+        if (quiz.IsNormalQuiz())
+        {
+            return quiz.Questions.Count >= quiz.RoundCount && quiz.Questions.Count > 0;
+        }
+
+        int count = 0;
+        var quizCombinations = await _quizCombinationRepository.GetByParentId(id);
+        foreach (var combination in quizCombinations)
+        {
+            var childQuiz = await _questionRepository.GetQuestionCountByQuizId(combination.ChildId);
+            count += childQuiz;
+        }
+
+        return count >= quiz.RoundCount && count > 0;
+    }
+
+    public async Task<List<Question>> GetCombinedQuestions(Quiz quiz)
+    {
+        return await _questionRepository.GetCombinedQuestions(quiz);
     }
 }

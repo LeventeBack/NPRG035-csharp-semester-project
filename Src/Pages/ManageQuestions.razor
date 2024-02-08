@@ -142,7 +142,7 @@ else
         QuizService = new ManageQuizService(quizRepository, navigationManager, js);
         QuestionService = new ManageQuestionService(questionRepository, navigationManager, js);
         await QuizService.LoadQuiz(QuizId);
-        if (CurrentQuiz.Type == (int)Quiz.QuizType.Combined)
+        if (CurrentQuiz.IsCombinedQuiz())
         {
             QuizCombinationService = new QuizCombinationService(
             quizCombinationRepository,

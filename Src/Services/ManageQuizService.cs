@@ -92,15 +92,27 @@ public class ManageQuizService
         }
     }
 
-    public async Task LoadNonEmptyQuizzes()
+    public async Task LoadPlayableQuizzes()
     {
         await LoadQuizzes();
-        Quizzes = Quizzes?.Where(q => q.Questions.Count > 0).ToList();
+        List<Quiz> playableQuizzes = new List<Quiz>();
+        foreach (var quiz in Quizzes)
+        {
+            if (await _repository.IsQuizPlayable(quiz.Id))
+            {
+                playableQuizzes.Add(quiz);
+            }
+        }
+        Quizzes = playableQuizzes;
     }
 
     public void UpdateSelectedQuiz(Question question)
     {
         if (SelectedQuiz == null || SelectedQuiz.Questions == null)
+        {
+            return;
+        }
+        if (SelectedQuiz.IsCombinedQuiz())
         {
             return;
         }

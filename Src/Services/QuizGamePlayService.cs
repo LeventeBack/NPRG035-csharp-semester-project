@@ -1,6 +1,7 @@
 using QuizEdu.Src.Models;
 using MudBlazor;
 using Microsoft.JSInterop;
+using QuizEdu.Src.Data;
 
 namespace QuizEdu.Src.Services;
 
@@ -12,27 +13,31 @@ public class QuizGamePlayService
     public const int OPTION_COUNT = 4;
 
     private Quiz _quiz { get; set; }
+    private List<Question> _questions { get; set; }
     private int _score { get; set; } = 0;
     private int _roundCount { get; set; }
     private int _currentIndex { get; set; } = 0;
     private bool _hasEnded { get; set; } = false;
     private Option? _selectedOption { get; set; }
     private JsInteractionService _jsInteraction;
-
-    public QuizGamePlayService(Quiz activeQuiz, IJSRuntime jSRuntime)
+    public QuizGamePlayService(
+        Quiz activeQuiz,
+        List<Question> questions,
+        IJSRuntime jSRuntime)
     {
         _quiz = activeQuiz;
-        Shuffle(_quiz.Questions);
-        ShuffleOptions();
+        _questions = questions;
         _jsInteraction = new JsInteractionService(jSRuntime);
+        Shuffle(_questions);
+        ShuffleOptions();
         _roundCount = GetRoundCount();
     }
 
     public Question GetCurrentQuestion()
     {
-        if (_currentIndex < _quiz.Questions.Count)
+        if (_questions is not null && _currentIndex < _questions.Count)
         {
-            return _quiz.Questions[_currentIndex];
+            return _questions[_currentIndex];
         }
         return null;
     }
@@ -80,14 +85,14 @@ public class QuizGamePlayService
     {
         if (_quiz.RoundCount > 0)
         {
-            return Math.Min(_quiz.RoundCount, _quiz.Questions.Count);
+            return Math.Min(_quiz.RoundCount, _questions.Count);
         }
-        return _quiz.Questions.Count;
+        return _questions.Count;
     }
 
     private void ShuffleOptions()
     {
-        foreach (var question in _quiz.Questions)
+        foreach (var question in _questions)
         {
             Shuffle(question.Options);
         }
@@ -109,7 +114,7 @@ public class QuizGamePlayService
 
     private bool HasNextQuestion()
     {
-        return _currentIndex + 1 < _quiz.Questions.Count;
+        return _currentIndex + 1 < _questions.Count;
     }
 
     private bool HasNextRound()
@@ -122,5 +127,4 @@ public class QuizGamePlayService
     public bool IsCorrect => _selectedOption.IsCorrect;
     public int Score => _score;
     public int CurrentRound => _currentIndex + 1;
-
 }

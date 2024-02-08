@@ -8,74 +8,74 @@
 
 <PageTitle>Play Quiz</PageTitle>
 
-@if (ActiveQuiz is null)
+@if (ActiveQuiz is null || QuizGamePlay is null)
 {
-        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="height: 100vh;">
+    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="height: 100vh;">
 
-        <MudProgressCircular Color="Color.Warning" Indeterminate="true" />
-    </MudStack>
+    <MudProgressCircular Color="Color.Warning" Indeterminate="true" />
+</MudStack>
 }
 else if (QuizGamePlay != null && QuizGamePlay.HasEnded)
 {
-        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="height: 100vh;">
+    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Style="height: 100vh;">
 
 
-        <MainTitle Text="The game has ended" />
+    <MainTitle Text="The game has ended" />
+    <br>
+    <ScoreBoard Text="Final Score" Score="@QuizGamePlay.Score" Total="@QuizGamePlay.CurrentRound" />
+    <br>
+    <MudItem>
+        <MudTextField Label="Your name" Variant="Variant.Outlined" Style="flex-grow: initial"
+            @bind-Value="HistoryService.UserName" />
         <br>
-        <ScoreBoard Text="Final Score" Score="@QuizGamePlay.Score" Total="@QuizGamePlay.CurrentRound" />
-        <br>
-        <MudItem>
-            <MudTextField Label="Your name" Variant="Variant.Outlined" Style="flex-grow: initial"
-                @bind-Value="HistoryService.UserName" />
-                <br>
-            <MudButton Color="Color.Info" Variant="Variant.Filled" Style="font-size: 1.6rem;"
-                OnClick="() => HistoryService.InitSaveGameResult(QuizId, QuizGamePlay.Score)">
-                Save result and Play again
-            </MudButton>
-        </MudItem>
-    </MudStack>
+        <MudButton Color="Color.Info" Variant="Variant.Filled" Style="font-size: 1.6rem;"
+            OnClick="() => HistoryService.InitSaveGameResult(QuizId, QuizGamePlay.Score)">
+            Save result and Play again
+        </MudButton>
+    </MudItem>
+</MudStack>
 }
-else
+else if (CurrentQuestion != null)
 {
-        <MudStack Justify="Justify.SpaceBetween" Class="h-full py-10 px-2">
-        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-            <MudItem md="7" lg="9" Class="px-8">
-                <MudText Typo="Typo.h2" Style="color: white; font-weight: bold;" class="mb-16">
-                    @ActiveQuiz.Title <span style="font-size: 2rem"> (Question @QuizGamePlay.CurrentRound)</span>
-                </MudText>
-                <MudText Typo="Typo.body1" Style="color: white; font-size: 4rem; font-weight: bold; text-align: center">
-                    @CurrentQuestion.Text
-                </MudText>
-            </MudItem>
-            <ScoreBoard Text="Current Score" Score="@QuizGamePlay.Score" Total="@QuizGamePlay.CurrentRound" />
-        </MudStack>
-        <MudGrid Spacing="6">
-            @foreach (Option option in CurrentQuestion.Options)
+    <MudStack Justify="Justify.SpaceBetween" Class="h-full py-10 px-2">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+        <MudItem md="7" lg="9" Class="px-8">
+            <MudText Typo="Typo.h2" Style="color: white; font-weight: bold;" class="mb-16">
+                @ActiveQuiz.Title <span style="font-size: 2rem"> (Question @QuizGamePlay.CurrentRound)</span>
+            </MudText>
+            <MudText Typo="Typo.body1" Style="color: white; font-size: 4rem; font-weight: bold; text-align: center">
+                @CurrentQuestion.Text
+            </MudText>
+        </MudItem>
+        <ScoreBoard Text="Current Score" Score="@QuizGamePlay.Score" Total="@QuizGamePlay.CurrentRound" />
+    </MudStack>
+    <MudGrid Spacing="6">
+        @foreach (Option option in CurrentQuestion.Options)
             {
-                        <MudItem md="6" Style="width: 100%;">
-                            <OptionButton Color="@QuizGamePlay.GetOptionColor(option)" Text="@option.Text"
-                                OnClick="() => QuizGamePlay.HandleOptionClick(option)" />
-                        </MudItem>
+                <MudItem md="6" Style="width: 100%;">
+                    <OptionButton Color="@QuizGamePlay.GetOptionColor(option)" Text="@option.Text"
+                        OnClick="() => QuizGamePlay.HandleOptionClick(option)" />
+                </MudItem>
             }
-            </MudGrid>
-            <audio id="player">
-                <source id="playerSource" src="" />
-            </audio>
-            <script>
-                window.PlayAudioFile = (src) => {
-                    const audio = document.getElementById('player');
-                    if (audio != null) {
-                        const audioSource = document.getElementById('playerSource');
-                        if (audioSource != null) {
-                            audioSource.src = src;
-                            audio.load();
-                            audio.play();
-                        }
+        </MudGrid>
+        <audio id="player">
+            <source id="playerSource" src="" />
+        </audio>
+        <script>
+            window.PlayAudioFile = (src) => {
+                const audio = document.getElementById('player');
+                if (audio != null) {
+                    const audioSource = document.getElementById('playerSource');
+                    if (audioSource != null) {
+                        audioSource.src = src;
+                        audio.load();
+                        audio.play();
                     }
                 }
-            </script>
+            }
+        </script>
 
-        </MudStack>
+    </MudStack>
 
 }
 
@@ -94,7 +94,17 @@ else
     protected override async Task OnInitializedAsync()
     {
         ActiveQuiz = await quizRepository.Get(QuizId);
-        QuizGamePlay = new QuizGamePlayService(ActiveQuiz, js);
+        List<Question> questions = await GetQuestions();
+        QuizGamePlay = new QuizGamePlayService(ActiveQuiz, questions, js);
         HistoryService = new HistoryService(gameResultRepository, navigationManager);
+    }
+
+    private async Task<List<Question>> GetQuestions()
+    {
+        if (ActiveQuiz.IsNormalQuiz())
+        {
+            return ActiveQuiz.Questions;
+        }
+        return await quizRepository.GetCombinedQuestions(ActiveQuiz);
     }
 }

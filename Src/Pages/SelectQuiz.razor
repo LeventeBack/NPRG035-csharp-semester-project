@@ -36,13 +36,11 @@ else
         <HeaderContent>
             <MudTh>Title</MudTh>
             <MudTh>Round Count</MudTh>
-            <MudTh>Number of questions</MudTh>
             <MudTh></MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Title">@context.Title</MudTd>
             <MudTd DataLabel="Round Count">@context.RoundCount</MudTd>
-            <MudTd DataLabel="Nr. of questions">@context.Questions.Count</MudTd>
             <MudTd>
                 <MudStack Justify="Justify.FlexEnd" Row>
                     <MudButton Color="Color.Warning" Variant="Variant.Filled"
@@ -70,6 +68,6 @@ else
     protected override async Task OnInitializedAsync()
     {
         Service = new ManageQuizService(quizRepository, navigationManager);
-        await Service.LoadNonEmptyQuizzes();
+        await Service.LoadPlayableQuizzes();
     }
 }

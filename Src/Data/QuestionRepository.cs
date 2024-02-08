@@ -8,14 +8,17 @@ public class QuestionRepository
     private readonly ApplicationDBContext _context;
     private readonly OptionRepository _optionRepository;
 
+    private readonly QuizCombinationRepository _quizCombinationRepository;
+
     public QuestionRepository(ApplicationDBContext context)
     {
         this._context = context;
         this._optionRepository = new OptionRepository(context);
+        this._quizCombinationRepository = new QuizCombinationRepository(context);
     }
-    public async Task<List<Question>> GetByQuiz(int quizId)
+    public async Task<List<Question>> GetByQuiz(Quiz quiz)
     {
-        List<Question> questions = await _context.Questions.Where(a => a.QuizId == quizId).ToListAsync();
+        List<Question> questions = await GetQuestionByQuizId(quiz.Id);
 
         foreach (var question in questions)
         {
@@ -23,6 +26,35 @@ public class QuestionRepository
         }
 
         return questions;
+    }
+
+    public async Task<int> GetQuestionCountByQuizId(int quizId)
+    {
+        return await _context.Questions.Where(a => a.QuizId == quizId).CountAsync();
+    }
+
+    public async Task<List<Question>> GetCombinedQuestions(Quiz quiz)
+    {
+        if (quiz.IsNormalQuiz())
+        {
+            return await GetQuestionByQuizId(quiz.Id);
+        }
+
+        List<QuizCombination> quizCombinations = await _quizCombinationRepository.GetByParentId(quiz.Id);
+
+        List<Question> questions = new List<Question>();
+        foreach (var combination in quizCombinations)
+        {
+            List<Question> childQuestions = await GetQuestionByQuizId(combination.ChildId);
+            questions.AddRange(childQuestions);
+        }
+
+        return questions;
+    }
+
+    private async Task<List<Question>> GetQuestionByQuizId(int quizId)
+    {
+        return await _context.Questions.Where(a => a.QuizId == quizId).ToListAsync();
     }
 
     public async Task Create(Question question)
