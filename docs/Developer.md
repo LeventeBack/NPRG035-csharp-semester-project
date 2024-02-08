@@ -22,15 +22,7 @@ The root directory contains the following files and folders:
 
 - `QuizEdu.sln` - The solution file for the QuizEdu project.
 
-- `QuizEdu/` - The main project folder containing the source code for the QuizEdu application.
-
-  1.2 QuizEdu Project
-
-The QuizEdu project contains the following files and folders:
-
 - `QuizEdu.csproj` - The project file for the QuizEdu application.
-
-- `Migrations/` - Contains the migrations for the database
 
 - `Properties/` - The properties folder contains the following files:
 
@@ -58,19 +50,27 @@ The QuizEdu project contains the following files and folders:
 
   - `Data/` - Contains the `ApplicationDbContext.cs` file which is used to connect to the database.
 
+    - It also contains the repository files for the `Quiz`, `Question`, `Option`, `History` and `QuizCombination` models. These files are used to manipulate the data in the database using Entity Framework Core.
+
   - `Layout/` - Contains the main layout of the application: `MainLayout.razor`
 
   - `Models/` - Contains the models of the application:
 
-    - `Quiz.cs` - Represents a quiz game with the following properties: **_Id_**, **_Title_**
+    - `Quiz.cs` - Represents a quiz game with the following properties: **_Id_**, **_Title_**, **_Type_**, **_RoundCount_**
 
     - `Question.cs` - Represents a question in a quiz with the following properties: **_Id_**, **_Text_**, **_QuizId_**
 
     - `Option.cs` - Represents an option in a question with the following properties: **_Id_**, **_Text_**, **_IsCorrect_**, **_QuestionId_**
 
+    - `GameResult.cs` - Represents the result of a game with the following properties: **_Id_**, **_QuizId_**, **_UserName_**, **_Score_**, **_Date_**
+
+    - `QuizCombination.cs` - Represents the combination of a quiz and a question with the following properties: **_Id_**, **_ParentId_**, **_ChildId_**
+
   - `Pages/` - Contains the pages of the application:
 
     - `Home.razor` - The main page of the application It contains the start menu with a few interactive buttons.
+
+    - `History.razor` - The page which contains the history of the games played.
 
     - `ManageQuiz.razor` - The page which contains the list of existing quizzes and the option to create a new quiz or edit an existing one.
 
@@ -82,9 +82,19 @@ The QuizEdu project contains the following files and folders:
 
   - `Services/` - Contains service files for data manipulation and for the main game-flow:
 
-    - `QuizRepository.cs`, `QuestionRepository.cs`, `OptionRepository.cs` - The service files for data manipulation through the database context using Entity Framework Core.
-
     - `QuizGamePlayService.cs` - The service file for the main game-flow. It contains the logic for the game and the methods for making the game dynamic.
+
+    - `HistoryService.cs` - The service file for the history of the games. It contains the logic for the history and the methods for manipulating the history data.
+
+    - `JsInteractionService` - The service file for the JavaScript interactions. It contains the logic for the JavaScript interactions and the methods for calling JavaScript functions from C#.
+
+    - `ManageQuizService.cs` - This service file contains the logic for the quiz management. It contains the methods for manipulating the quiz data.
+
+    - `ManageQuestionService.cs` - This service file contains the logic for the question management. It contains the methods for manipulating the question data.
+
+    - `QuizCombinationService.cs` - This service file contains the logic for the quiz combination management.
+
+    - `NavigationService.cs` - This service file contains the logic for navigating between the pages.
 
   - `_Imports.razor` - Contains the global imports for the razer files
 
@@ -111,10 +121,8 @@ The QuizEdu application can be further enhanced with the following improvements:
 
 1. **Timer for Each Question**: Implement timers for questions to add a time constraint, enhancing the quiz experience and making it more dynamic.
 
-2. **Score Saving and Leaderboard**: Introduce a scoring system to save and track user scores, along with a leaderboard feature to showcase top performers and encourage competition.
+2. **Authentication and Authorization for Teachers**: Strengthen security with authentication and authorization mechanisms tailored for teachers, ensuring only authorized users can manage quiz-related functionalities.
 
-3. **Authentication and Authorization for Teachers**: Strengthen security with authentication and authorization mechanisms tailored for teachers, ensuring only authorized users can manage quiz-related functionalities.
-
-4. **Animations and Transitions**: Enhance the user interface by incorporating animations and transitions. Adding visually appealing elements can elevate the overall user experience, making the application more engaging and polished. Consider animations during question transitions, score updates, or other key interactions for a more immersive environment.
+3. **Animations and Transitions**: Enhance the user interface by incorporating animations and transitions. Adding visually appealing elements can elevate the overall user experience, making the application more engaging and polished. Consider animations during question transitions, score updates, or other key interactions for a more immersive environment.
 
 These improvements aim to add new features, improve user interaction, and provide additional functionality for both quiz participants and teachers, contributing to a more dynamic and enjoyable educational experience.
