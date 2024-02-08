@@ -58,10 +58,11 @@ public class QuizGamePlayService
     {
         if (HasAnswered) return;
 
+        _selectedOption = option;
+
         string audioSrc = option.IsCorrect ? CORRECT_AUDIO : WRONG_AUDIO;
         await _jsInteraction.PlayAudio(audioSrc);
 
-        _selectedOption = option;
 
         if (option.IsCorrect) _score++;
 
