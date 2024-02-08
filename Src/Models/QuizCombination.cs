@@ -1,5 +1,9 @@
 namespace QuizEdu.Src.Models;
 
+/// <summary>
+/// This class represents a quiz combination in the database.
+/// It contains the id, parent id, and child id.
+/// </summary>
 public class QuizCombination
 {
     public int Id { get; set; }
